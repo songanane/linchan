@@ -83,6 +83,11 @@
   </content_rating>
 
   <releases>
+    <release version="0.1.1" date="2026-11-02">
+      <description>
+        <p>Adds "Clear Browsing Data" to the menu, which deletes the cookies and site data kept by the reply window.</p>
+      </description>
+    </release>
     <release version="0.1.0" date="2026-11-01">
       <description>
         <p>Initial release.</p>

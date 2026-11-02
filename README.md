@@ -16,7 +16,7 @@ You do not need to build anything.
    `linchan-<version>-x86_64.flatpak`.
 2. Install it:
    ```sh
-   flatpak install --user ./linchan-0.1.0-x86_64.flatpak
+   flatpak install --user ./linchan-0.1.1-x86_64.flatpak
    ```
 3. Start **Linchan** from your app menu, or run `flatpak run io.github.songanane.Linchan`.
 
