@@ -65,11 +65,18 @@ In the media viewer: ←/→ navigate, F fullscreen, S save, O open externally, 
 - **Content.** Boards contain unmoderated content from anonymous users that may be offensive or explicit. Use "Hide NSFW boards" in the menu if you want.
 
 ## Made with AI
-Most of this code was written with Claude (Anthropic) under my direction. I use it and test it daily, but
+Most of this code was written with AI under my direction. I use it and test it daily, but
 expect rough edges. Bug reports and pull requests are welcome.
 
 ## Build from source
-Needs Python 3, PyGObject, GTK 4.12+, libadwaita 1.5+, WebKitGTK 6.0 and GStreamer good plugins.
+Needs:
+ - Python 3
+ - PyGObject
+ - GTK 4.12+
+ - libadwaita 1.5+
+ - WebKitGTK 6.0
+ - GStreamer good plugins
+
 With [uv](https://docs.astral.sh/uv/) (the system provides GTK and PyGObject, uv manages the rest):
 ```sh
 ./bin/linchan                  # creates .venv on first run, then starts the app
