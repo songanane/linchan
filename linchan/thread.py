@@ -1,4 +1,5 @@
 """Thread page: virtualised list of posts with live refresh."""
+
 import re
 from pathlib import Path
 
@@ -53,8 +54,10 @@ class PostRow(Gtk.Box):
         # the comment to the right.
         # Filename and size are separate labels so the gaps picture -> name -> size
         # are all the same (a two-line label would add its own line spacing).
-        self.fname, self.fsize = (Gtk.Label(css_classes=["caption", "dim-label"], xalign=0, ellipsize=Pango.EllipsizeMode.END,
-                                            max_width_chars=1, width_chars=1) for _ in range(2))
+        self.fname, self.fsize = (
+            Gtk.Label(css_classes=["caption", "dim-label"], xalign=0, ellipsize=Pango.EllipsizeMode.END, max_width_chars=1, width_chars=1)
+            for _ in range(2)
+        )
         self.thumb_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, valign=Gtk.Align.START)
         self.thumb_btn.set_margin_bottom(1)  # evens out ink gaps: the filename's glyphs start slightly lower
         self.thumb_box.append(self.thumb_btn)
@@ -67,8 +70,12 @@ class PostRow(Gtk.Box):
         body.append(self.comment)
         self.backs = Gtk.Label(use_markup=True, css_classes=["caption"], **wrap)
         self.backs.connect("activate-link", lambda _l, uri: self.page.on_link(uri))
-        self.reply_btn = Gtk.Button(icon_name="mail-reply-sender-symbolic", css_classes=["flat", "circular"], valign=Gtk.Align.START,
-                                    tooltip_text="Reply to this post")
+        self.reply_btn = Gtk.Button(
+            icon_name="mail-reply-sender-symbolic",
+            css_classes=["flat", "circular"],
+            valign=Gtk.Align.START,
+            tooltip_text="Reply to this post",
+        )
         self.reply_btn.connect("clicked", lambda *_: self.page.open_reply(self.post.no) if self.post else None)
         head = Gtk.Box(spacing=6)
         head.append(self.header)
@@ -113,7 +120,8 @@ class PostRow(Gtk.Box):
         self.fname.set_tooltip_text(name)
         if post.spoiler_image:
             icon = Gtk.IconTheme.get_for_display(Gdk.Display.get_default()).lookup_icon(
-                "view-conceal-symbolic", None, 64, self.get_scale_factor(), Gtk.TextDirection.NONE, 0)
+                "view-conceal-symbolic", None, 64, self.get_scale_factor(), Gtk.TextDirection.NONE, 0
+            )
             self.picture.set_content_fit(Gtk.ContentFit.SCALE_DOWN)
             self.picture.set_box(100, 100)
             self._caption_width(100)
@@ -125,8 +133,12 @@ class PostRow(Gtk.Box):
         self._caption_width(tw)
         self.picture.set_paintable(None)
         tok = self.tok
-        get_texture(self.page.win.net, post.thumb_url, post.thumb_path,
-                    lambda tex: self.picture.set_paintable(tex) if tok == self.tok and tex else None)
+        get_texture(
+            self.page.win.net,
+            post.thumb_url,
+            post.thumb_path,
+            lambda tex: self.picture.set_paintable(tex) if tok == self.tok and tex else None,
+        )
 
     def unbind(self):
         self.tok += 1
@@ -153,11 +165,14 @@ class ThreadPage(Adw.NavigationPage):
         factory.connect("bind", lambda _f, li: li.get_child().bind(li.get_item()))
         factory.connect("unbind", lambda _f, li: li.get_child().unbind())
         self.list = Gtk.ListView(model=Gtk.NoSelection(model=self.store), factory=factory, css_classes=["post-list"])
-        self.scroller = Gtk.ScrolledWindow(vexpand=True, child=Adw.ClampScrollable(maximum_size=1000, tightening_threshold=700, child=self.list))
+        self.scroller = Gtk.ScrolledWindow(
+            vexpand=True, child=Adw.ClampScrollable(maximum_size=1000, tightening_threshold=700, child=self.list)
+        )
         self.toasts = Adw.ToastOverlay(child=self.scroller)
         # Floating card used for hover previews of quoted posts.
-        self.preview_box = Gtk.Box(css_classes=["preview-card"], halign=Gtk.Align.START, valign=Gtk.Align.START,
-                                   can_target=False, visible=False)
+        self.preview_box = Gtk.Box(
+            css_classes=["preview-card"], halign=Gtk.Align.START, valign=Gtk.Align.START, can_target=False, visible=False
+        )
         self.overlay = Gtk.Overlay(child=self.toasts)
         self.overlay.add_overlay(self.preview_box)
         self.banner = Adw.Banner(revealed=False)
@@ -179,8 +194,9 @@ class ThreadPage(Adw.NavigationPage):
         header.pack_end(mb)
         header.pack_end(refresh)
         header.pack_end(self.watch_btn)
-        self.thread_reply_btn = Gtk.Button(icon_name="mail-reply-sender-symbolic", tooltip_text="Reply to thread",
-                                           visible=ReplyDialog is not None)
+        self.thread_reply_btn = Gtk.Button(
+            icon_name="mail-reply-sender-symbolic", tooltip_text="Reply to thread", visible=ReplyDialog is not None
+        )
         self.thread_reply_btn.connect("clicked", lambda *_: self.open_reply())
         header.pack_end(self.thread_reply_btn)
         view = Adw.ToolbarView(content=self.overlay)
@@ -189,8 +205,13 @@ class ThreadPage(Adw.NavigationPage):
         self.set_child(view)
 
         group = Gio.SimpleActionGroup()
-        for name, fn in (("download", self.download_all), ("browser", self.open_browser), ("copy", self.copy_link),
-                         ("top", lambda *_: self.scroll_edge(False)), ("bottom", lambda *_: self.scroll_edge(True))):
+        for name, fn in (
+            ("download", self.download_all),
+            ("browser", self.open_browser),
+            ("copy", self.copy_link),
+            ("top", lambda *_: self.scroll_edge(False)),
+            ("bottom", lambda *_: self.scroll_edge(True)),
+        ):
             a = Gio.SimpleAction.new(name, None)
             a.connect("activate", lambda _a, _p, fn=fn: fn())
             group.add_action(a)
@@ -281,6 +302,7 @@ class ThreadPage(Adw.NavigationPage):
                 self.store.items_changed(pos, 1, 1)
         # header
         from .markup import clean, html_to_pango
+
         self.subject = clean(op.get("sub", "")) or html_to_pango(op.get("com", ""))[1][:60].replace("\n", " ") or f"Thread {self.no}"
         bits = [f"{op.get('replies', len(posts) - 1)} replies", f"{op.get('images', 0)} images"]
         for key, label in (("bumplimit", "bump limit"), ("imagelimit", "image limit"), ("closed", "closed"), ("archived", "archived")):
@@ -366,8 +388,8 @@ class ThreadPage(Adw.NavigationPage):
     def _place_preview(self, height):
         px, py, width = self._preview_at
         ow, oh = self.overlay.get_width(), self.overlay.get_height()
-        top = py + 24                           # below the pointer…
-        if top + height > oh - 8:               # …or above it when there is no room
+        top = py + 24  # below the pointer…
+        if top + height > oh - 8:  # …or above it when there is no room
             top = max(8, py - height - 12)
         self.preview_box.set_margin_start(max(8, min(px - 24, ow - width - 8)))
         self.preview_box.set_margin_top(top)
@@ -439,7 +461,9 @@ class ThreadPage(Adw.NavigationPage):
                 state["ok"] += 0 if err else 1
                 if state["left"] == 0:
                     t = Adw.Toast(title=f"Saved {state['ok']}/{len(media)} files", button_label="Open Folder", timeout=6)
-                    t.connect("button-clicked", lambda *_: Gtk.FileLauncher(file=Gio.File.new_for_path(str(folder))).launch(self.win, None, None))
+                    t.connect(
+                        "button-clicked", lambda *_: Gtk.FileLauncher(file=Gio.File.new_for_path(str(folder))).launch(self.win, None, None)
+                    )
                     self.toasts.add_toast(t)
 
             self.win.net.download(p.media_url, dest, done)
@@ -459,8 +483,9 @@ class ThreadPage(Adw.NavigationPage):
         elif not self.can_reply:
             self.toasts.add_toast(Adw.Toast(title="This thread is closed", timeout=2))
         else:
-            ReplyDialog(self.win, self.board, self.no, prefill=f">>{quote}\n" if quote else "",
-                        on_posted=self._after_post).present(self.win)
+            ReplyDialog(self.win, self.board, self.no, prefill=f">>{quote}\n" if quote else "", on_posted=self._after_post).present(
+                self.win
+            )
 
     def _after_post(self, pid):
         """The post is live: reload the thread until it shows up, then scroll to it."""

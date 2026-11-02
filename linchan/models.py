@@ -1,4 +1,5 @@
 """GObject wrappers around API dicts, so they can live in Gio.ListStore."""
+
 import time
 
 from gi.repository import GLib, GObject

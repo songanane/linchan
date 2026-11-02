@@ -1,4 +1,5 @@
 """Catalog page: searchable, sortable grid of threads."""
+
 import gi
 
 gi.require_version("Gtk", "4.0")
@@ -23,11 +24,29 @@ _KEYS = [
 
 class Card(Gtk.Box):
     def __init__(self):
-        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=6, css_classes=["catalog-card", "card"], width_request=300, margin_top=6, margin_bottom=6, margin_start=6, margin_end=6)
+        super().__init__(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=6,
+            css_classes=["catalog-card", "card"],
+            width_request=300,
+            margin_top=6,
+            margin_bottom=6,
+            margin_start=6,
+            margin_end=6,
+        )
         self.tok, self.item = 0, None
         self.picture = Gtk.Picture(can_shrink=True, content_fit=Gtk.ContentFit.CONTAIN, height_request=240, css_classes=["catalog-thumb"])
         self.subject = Gtk.Label(xalign=0, css_classes=["heading"], ellipsize=Pango.EllipsizeMode.END, single_line_mode=True)
-        self.teaser = Gtk.Label(xalign=0, yalign=0, wrap=True, wrap_mode=Pango.WrapMode.WORD_CHAR, lines=2, ellipsize=Pango.EllipsizeMode.END, vexpand=False, css_classes=["caption"])
+        self.teaser = Gtk.Label(
+            xalign=0,
+            yalign=0,
+            wrap=True,
+            wrap_mode=Pango.WrapMode.WORD_CHAR,
+            lines=2,
+            ellipsize=Pango.EllipsizeMode.END,
+            vexpand=False,
+            css_classes=["caption"],
+        )
         self.meta = Gtk.Label(xalign=0, css_classes=["caption", "dim-label"])
         for w in (self.picture, self.subject, self.teaser, self.meta):
             self.append(w)
@@ -83,7 +102,14 @@ class CatalogPage(Adw.NavigationPage):
 
         factory.connect("setup", setup)
         factory.connect("bind", lambda _f, li: li.get_child().bind(li.get_item()))
-        self.grid = Gtk.GridView(model=Gtk.NoSelection(model=model), factory=factory, single_click_activate=True, min_columns=1, max_columns=10, css_classes=["catalog-grid"])
+        self.grid = Gtk.GridView(
+            model=Gtk.NoSelection(model=model),
+            factory=factory,
+            single_click_activate=True,
+            min_columns=1,
+            max_columns=10,
+            css_classes=["catalog-grid"],
+        )
         self.grid.connect("activate", lambda _g, pos: win.open_thread(board, self.model.get_item(pos).no))
         scroller = Gtk.ScrolledWindow(vexpand=True, child=self.grid)
 
@@ -98,7 +124,9 @@ class CatalogPage(Adw.NavigationPage):
         retry.connect("clicked", lambda *_: self.refresh())
         self.status.set_child(retry)
         self.stack = Gtk.Stack()
-        self.stack.add_named(Gtk.Spinner(spinning=True, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, width_request=32, height_request=32), "loading")
+        self.stack.add_named(
+            Gtk.Spinner(spinning=True, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, width_request=32, height_request=32), "loading"
+        )
         self.stack.add_named(scroller, "grid")
         self.stack.add_named(self.status, "error")
 
@@ -109,7 +137,9 @@ class CatalogPage(Adw.NavigationPage):
         win.split.bind_property("show-sidebar", side, "active", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
         header.pack_start(side)
         sbtn = Gtk.ToggleButton(icon_name="system-search-symbolic", tooltip_text="Filter (Ctrl+F)")
-        sbtn.bind_property("active", self.searchbar, "search-mode-enabled", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE)
+        sbtn.bind_property(
+            "active", self.searchbar, "search-mode-enabled", GObject.BindingFlags.BIDIRECTIONAL | GObject.BindingFlags.SYNC_CREATE
+        )
         refresh = Gtk.Button(icon_name="view-refresh-symbolic", tooltip_text="Refresh (Ctrl+R)")
         refresh.connect("clicked", lambda *_: self.refresh())
         sort = Gtk.DropDown(model=Gtk.StringList.new(SORTS), tooltip_text="Sort")

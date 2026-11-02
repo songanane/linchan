@@ -30,8 +30,13 @@ class Linchan(Adw.Application):
         quit_ = Gio.SimpleAction.new("quit", None)
         quit_.connect("activate", lambda *_: self.quit())
         self.add_action(quit_)
-        for action, keys in (("app.quit", ["<Ctrl>q"]), ("win.open-url", ["<Ctrl>l", "<Ctrl>o"]), ("win.refresh", ["<Ctrl>r", "F5"]),
-                             ("win.back", ["<Alt>Left", "BackSpace"]), ("win.toggle-sidebar", ["F9"])):
+        for action, keys in (
+            ("app.quit", ["<Ctrl>q"]),
+            ("win.open-url", ["<Ctrl>l", "<Ctrl>o"]),
+            ("win.refresh", ["<Ctrl>r", "F5"]),
+            ("win.back", ["<Alt>Left", "BackSpace"]),
+            ("win.toggle-sidebar", ["F9"]),
+        ):
             self.set_accels_for_action(action, keys)
         threading.Thread(target=prune_cache, daemon=True).start()
 

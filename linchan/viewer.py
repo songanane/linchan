@@ -1,4 +1,5 @@
 """Fullscreen-capable media viewer (images, animated GIFs, webm/mp4)."""
+
 import shutil
 import subprocess
 from urllib.parse import quote
@@ -119,8 +120,9 @@ class Viewer(Adw.Window):
             b.get_child().set_halign(Gtk.Align.START)
             b.connect("clicked", lambda _b, t=template: (pop.popdown(), self.reverse_search(t)))
             box.append(b)
-        return Gtk.MenuButton(icon_name="edit-find-symbolic", tooltip_text="Search for this image", popover=pop,
-                              css_classes=["flat", "circular"])
+        return Gtk.MenuButton(
+            icon_name="edit-find-symbolic", tooltip_text="Search for this image", popover=pop, css_classes=["flat", "circular"]
+        )
 
     def reverse_search(self, template):
         p = self.posts[self.index]
@@ -186,8 +188,12 @@ class Viewer(Adw.Window):
         self.progress.set_visible(True)
         self.progress.set_fraction(0)
         self.stack.set_visible_child_name("status")
-        self.net.download(p.media_url, p.media_path, lambda path, err: self._loaded(tok, p, path, err),
-                          progress=lambda f: self.progress.set_fraction(f) if tok == self.token else None)
+        self.net.download(
+            p.media_url,
+            p.media_path,
+            lambda path, err: self._loaded(tok, p, path, err),
+            progress=lambda f: self.progress.set_fraction(f) if tok == self.token else None,
+        )
         for nb in (i + 1, i - 1):  # prefetch neighbours (images only)
             if 0 <= nb < len(self.posts) and not self.posts[nb].is_video:
                 self.net.download(self.posts[nb].media_url, self.posts[nb].media_path, lambda *_: None)
@@ -209,7 +215,14 @@ class Viewer(Adw.Window):
             self.video.set_file(Gio.File.new_for_path(str(path)))
             stream = self.video.get_media_stream()
             if stream:
-                stream.connect("notify::error", lambda s, _p: self._fail(f"Playback failed: {s.get_error().message}\nPress O to open in mpv.") if s.get_error() and tok == self.token else None)
+                stream.connect(
+                    "notify::error",
+                    lambda s, _p: (
+                        self._fail(f"Playback failed: {s.get_error().message}\nPress O to open in mpv.")
+                        if s.get_error() and tok == self.token
+                        else None
+                    ),
+                )
             return
         try:
             if p.ext == ".gif":
@@ -257,8 +270,12 @@ class Viewer(Adw.Window):
     def open_external(self):
         p = self.posts[self.index]
         if p.is_video and shutil.which("mpv"):
-            subprocess.Popen(["mpv", "--loop", "--force-window=yes", p.media_url], start_new_session=True,
-                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.Popen(
+                ["mpv", "--loop", "--force-window=yes", p.media_url],
+                start_new_session=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
         elif p.media_path.exists():
             Gtk.FileLauncher(file=Gio.File.new_for_path(str(p.media_path))).launch(self, None, None)
 

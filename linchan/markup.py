@@ -1,4 +1,5 @@
 """Convert 4chan comment HTML into Pango markup."""
+
 import html
 import re
 from html.parser import HTMLParser
@@ -54,7 +55,7 @@ class _Parser(HTMLParser):
         pos = 0
         for m in _RE_URL.finditer(text):
             url = m.group(0).rstrip(".,;:!?)]}")
-            self.out.append(_esc(text[pos:m.start()]))
+            self.out.append(_esc(text[pos : m.start()]))
             self.out.append(f'<a href="{_esc(url)}">{_esc(url)}</a>')
             pos = m.start() + len(url)
         self.out.append(_esc(text[pos:]))

@@ -8,6 +8,7 @@ embedded WebKit view. Only the captcha part of that view is shown; the person
 solves it exactly as they would on the website. Linchan never solves, forges or
 bypasses any verification.
 """
+
 import base64
 import json
 import os
@@ -21,7 +22,7 @@ from gi.repository import Adw, Gdk, Gio, GLib, Gtk, Pango, WebKit
 
 from .net import WEB
 
-MAX_COMMENT = 2000      # 4chan's comment limit
+MAX_COMMENT = 2000  # 4chan's comment limit
 MAX_UPLOAD = 4 * 1024 * 1024
 POLL_MS = 700
 DRY_RUN = bool(os.environ.get("LINCHAN_DRY_RUN"))  # fill everything, but never send (for testing)
@@ -121,9 +122,9 @@ class ReplyDialog(Adw.Dialog):
     def __init__(self, win, board, tid, prefill="", on_posted=None):
         super().__init__(title="Reply", content_width=600, content_height=720)
         self.win, self.board, self.tid, self.on_posted = win, board, int(tid), on_posted
-        self.file = None            # Gio.File
-        self.state = "loading"      # loading | ready | posting | done | failed
-        self.last0 = None           # QR.lastReplyId before we posted
+        self.file = None  # Gio.File
+        self.state = "loading"  # loading | ready | posting | done | failed
+        self.last0 = None  # QR.lastReplyId before we posted
         self.poll_src = 0
         self.url = f"{WEB}/{board}/thread/{tid}"
 
@@ -134,8 +135,9 @@ class ReplyDialog(Adw.Dialog):
         fields.append(self.name_row)
         fields.append(self.opts_row)
 
-        self.comment = Gtk.TextView(wrap_mode=Gtk.WrapMode.WORD_CHAR, top_margin=8, bottom_margin=8, left_margin=10, right_margin=10,
-                                    accepts_tab=False)
+        self.comment = Gtk.TextView(
+            wrap_mode=Gtk.WrapMode.WORD_CHAR, top_margin=8, bottom_margin=8, left_margin=10, right_margin=10, accepts_tab=False
+        )
         self.comment.get_buffer().set_text(prefill)
         self.comment.get_buffer().connect("changed", self._on_changed)
         scroll = Gtk.ScrolledWindow(child=self.comment, min_content_height=150, vexpand=True, css_classes=["card"])
@@ -144,8 +146,9 @@ class ReplyDialog(Adw.Dialog):
         self.file_row = Adw.ActionRow(title="Attachment", subtitle="None")
         choose = Gtk.Button(label="Choose…", valign=Gtk.Align.CENTER)
         choose.connect("clicked", self._choose_file)
-        self.clear_btn = Gtk.Button(icon_name="edit-clear-symbolic", valign=Gtk.Align.CENTER, css_classes=["flat"], visible=False,
-                                    tooltip_text="Remove attachment")
+        self.clear_btn = Gtk.Button(
+            icon_name="edit-clear-symbolic", valign=Gtk.Align.CENTER, css_classes=["flat"], visible=False, tooltip_text="Remove attachment"
+        )
         self.clear_btn.connect("clicked", self._clear_file)
         self.file_row.add_suffix(self.clear_btn)
         self.file_row.add_suffix(choose)
@@ -170,8 +173,15 @@ class ReplyDialog(Adw.Dialog):
         comment_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)  # counter sits close under the comment
         comment_box.append(scroll)
         comment_box.append(self.counter)
-        for w in (fields, comment_box, file_list,
-                  Gtk.Label(label="Verification", xalign=0, css_classes=["heading"]), frame, self.status, self.open_web):
+        for w in (
+            fields,
+            comment_box,
+            file_list,
+            Gtk.Label(label="Verification", xalign=0, css_classes=["heading"]),
+            frame,
+            self.status,
+            self.open_web,
+        ):
             box.append(w)
 
         self.post_btn = Gtk.Button(label="Post", css_classes=["suggested-action"], sensitive=False)
@@ -224,6 +234,7 @@ class ReplyDialog(Adw.Dialog):
             except GLib.Error as e:
                 if cb:
                     cb("error: " + e.message)
+
         self.view.evaluate_javascript(js, -1, None, None, None, done)
 
     # ---- attachment ----------------------------------------------------------------------
@@ -264,8 +275,12 @@ class ReplyDialog(Adw.Dialog):
         if not any(h in url for h in ("4chan.org", "mcl.", "spur.us", "cloudflare.com", "4cdn.org")):
             return
         resource.connect("failed", lambda _r, err: print(f"[linchan] FAILED   {url}: {err.message}", flush=True))
-        resource.connect("finished", lambda r: print(
-            f"[linchan] finished {url} status={r.get_response().get_status_code() if r.get_response() else '?'}", flush=True))
+        resource.connect(
+            "finished",
+            lambda r: print(
+                f"[linchan] finished {url} status={r.get_response().get_status_code() if r.get_response() else '?'}", flush=True
+            ),
+        )
 
     def _on_create(self, view, action):
         """A page asked for a new window. Send real links to the system browser.
@@ -378,8 +393,11 @@ class ReplyDialog(Adw.Dialog):
             except GLib.Error as e:
                 return self._set_status(f"Could not read the attachment: {e.message}", error=True)
             info = self.file.query_info("standard::content-type", Gio.FileQueryInfoFlags.NONE, None)
-            payload["file"] = {"name": self.file.get_basename(), "type": info.get_content_type() or "application/octet-stream",
-                               "b64": base64.b64encode(data).decode()}
+            payload["file"] = {
+                "name": self.file.get_basename(),
+                "type": info.get_content_type() or "application/octet-stream",
+                "b64": base64.b64encode(data).decode(),
+            }
         self.state = "posting"
         self._enable_inputs(False)
         self.post_btn.set_sensitive(False)

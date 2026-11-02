@@ -18,7 +18,7 @@ Homepage = "https://github.com/songanane/linchan"
 linchan = "linchan.__main__:cli"
 
 [dependency-groups]
-dev = ["ruff"]
+dev = ["ruff", "isort"]
 
 [build-system]
 requires = ["uv_build>=0.8,<0.13"]
@@ -32,6 +32,13 @@ source-exclude = ["repo", "build*", "screenshots", "*.flatpak"]
 [tool.uv]
 # Use the system Python, so the system's PyGObject (built for it) can be imported.
 python-preference = "only-system"
+
+[tool.isort]
+profile = "black"
+line_length = 140
+# gi.require_version() calls sit between import blocks; isort leaves such blocks apart.
+known_first_party = ["linchan"]
+skip_gitignore = true  # do not crawl the Flatpak build folders
 
 [tool.ruff]
 line-length = 140

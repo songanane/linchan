@@ -1,4 +1,5 @@
 """Persistent settings + watch list (JSON in XDG config dir)."""
+
 import json
 import os
 from pathlib import Path

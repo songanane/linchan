@@ -1,4 +1,5 @@
 """Main window: boards + watch-list sidebar, navigation stack for content."""
+
 import json
 import re
 
@@ -89,8 +90,14 @@ class Window(Adw.ApplicationWindow):
         self.board_status = Gtk.Label(label="Loading boards…", css_classes=["dim-label"], margin_top=12)
 
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        for w in (self.watched_label, self.watched_list, Gtk.Label(label="Boards", xalign=0, css_classes=["heading"], margin_start=12, margin_top=8),
-                  self.board_search, self.board_status, self.board_list):
+        for w in (
+            self.watched_label,
+            self.watched_list,
+            Gtk.Label(label="Boards", xalign=0, css_classes=["heading"], margin_start=12, margin_top=8),
+            self.board_search,
+            self.board_status,
+            self.board_list,
+        ):
             box.append(w)
         view = Adw.ToolbarView(content=Gtk.ScrolledWindow(child=box, hscrollbar_policy=Gtk.PolicyType.NEVER))
         view.add_top_bar(header)
@@ -130,8 +137,14 @@ class Window(Adw.ApplicationWindow):
         for b in boards:
             row = Gtk.ListBoxRow()
             row.code, row.title, row.ws = b["board"], b.get("title", ""), bool(b.get("ws_board"))
-            lbl = Gtk.Label(use_markup=True, xalign=0, ellipsize=Pango.EllipsizeMode.END, margin_top=4, margin_bottom=4,
-                            label=f"<b>/{_esc(row.code)}/</b>  <span alpha='70%'>{_esc(row.title)}</span>")
+            lbl = Gtk.Label(
+                use_markup=True,
+                xalign=0,
+                ellipsize=Pango.EllipsizeMode.END,
+                margin_top=4,
+                margin_bottom=4,
+                label=f"<b>/{_esc(row.code)}/</b>  <span alpha='70%'>{_esc(row.title)}</span>",
+            )
             row.set_child(lbl)
             self.board_list.append(row)
         self.board_status.set_visible(False)
@@ -264,7 +277,9 @@ class Window(Adw.ApplicationWindow):
                 title.set_tooltip_text("404")
             elif unread > 0:
                 box.append(Gtk.Label(label=str(unread), css_classes=["unread-badge"], valign=Gtk.Align.CENTER))
-            rm = Gtk.Button(icon_name="window-close-symbolic", css_classes=["flat", "circular"], valign=Gtk.Align.CENTER, tooltip_text="Stop watching")
+            rm = Gtk.Button(
+                icon_name="window-close-symbolic", css_classes=["flat", "circular"], valign=Gtk.Align.CENTER, tooltip_text="Stop watching"
+            )
             rm.connect("clicked", lambda _b, w=w: self.unwatch(w["board"], w["no"]))
             box.append(rm)
             row.set_child(box)
