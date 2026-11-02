@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#57e389"/>
+      <stop offset="1" stop-color="#26a269"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#deddda"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="26" fill="url(#bg)"/>
+  <!-- back card -->
+  <rect x="22" y="22" width="62" height="46" rx="10" fill="#ffffff" opacity="0.45"/>
+  <!-- speech bubble -->
+  <path d="M40 40 h56 a10 10 0 0 1 10 10 v34 a10 10 0 0 1 -10 10 h-34 l-16 14 v-14 h-6 a10 10 0 0 1 -10 -10 v-34 a10 10 0 0 1 10 -10 z"
+        fill="url(#bubble)"/>
+  <!-- text lines -->
+  <rect x="48" y="56" width="44" height="6" rx="3" fill="#26a269"/>
+  <rect x="48" y="68" width="30" height="6" rx="3" fill="#26a269" opacity="0.7"/>
+  <rect x="48" y="80" width="38" height="6" rx="3" fill="#26a269" opacity="0.45"/>
+</svg>

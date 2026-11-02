@@ -1,0 +1,29 @@
+app-id: io.github.songanane.Linchan
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: linchan
+
+finish-args:
+  - --share=network
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --socket=pulseaudio
+
+modules:
+  - name: linchan
+    buildsystem: meson
+    sources:
+      # Local development build. For the Flathub submission, replace with:
+      #   - type: git
+      #     url: https://github.com/songanane/linchan.git
+      #     tag: v0.1.0
+      - type: dir
+        path: .
+        skip:
+          - .git
+          - build
+          - .flatpak-builder
+          - screenshots

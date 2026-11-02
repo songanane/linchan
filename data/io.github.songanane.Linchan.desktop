@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Linchan
+GenericName=Imageboard Browser
+Comment=Browse imageboards with a native interface
+Exec=linchan
+Icon=io.github.songanane.Linchan
+Terminal=false
+Type=Application
+Categories=Network;GTK;
+Keywords=4chan;imageboard;chan;board;thread;forum;
+StartupNotify=true
+StartupWMClass=io.github.songanane.Linchan

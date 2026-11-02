@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.songanane.Linchan</id>
+
+  <name>Linchan</name>
+  <summary>Browse imageboards natively</summary>
+
+  <developer id="io.github.songanane">
+    <name>songanane</name>
+  </developer>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <description>
+    <p>
+      Linchan is a fast, native imageboard browser built with GTK 4 and libadwaita.
+      It reads the public 4chan JSON API directly and renders everything with
+      native widgets instead of a web engine.
+    </p>
+    <p>
+      Linchan is an unofficial client. It is not affiliated with or endorsed by
+      4chan. Replies are posted through the site's own verification, which you
+      complete yourself in an embedded browser view; Linchan does not solve or
+      bypass any captcha. Boards contain unmoderated content from anonymous users
+      that may be offensive or explicit.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Board list with search, and an option to hide not-safe-for-work boards</li>
+      <li>Catalog grid with filtering and sorting by bump order, replies, images or age</li>
+      <li>Threads with quote links, reply links and live updates</li>
+      <li>Media viewer for images, animated GIFs and videos, with fullscreen and saving</li>
+      <li>Reply to threads, with optional attachments, using the site's own captcha</li>
+      <li>Watch list that tells you when threads you follow get new replies</li>
+      <li>Follows the API rules: at most one request per second and conditional requests</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.songanane.Linchan.desktop</launchable>
+
+  <url type="homepage">https://github.com/songanane/linchan</url>
+  <url type="bugtracker">https://github.com/songanane/linchan/issues</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/songanane/linchan/v0.1.0/screenshots/catalog.png</image>
+      <caption>The catalog grid for a board</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/songanane/linchan/v0.1.0/screenshots/thread.png</image>
+      <caption>Reading a thread</caption>
+    </screenshot>
+  </screenshots>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#57e389</color>
+    <color type="primary" scheme_preference="dark">#26a269</color>
+  </branding>
+
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-realistic">intense</content_attribute>
+    <content_attribute id="violence-bloodshed">intense</content_attribute>
+    <content_attribute id="violence-sexual">intense</content_attribute>
+    <content_attribute id="drugs-alcohol">moderate</content_attribute>
+    <content_attribute id="drugs-narcotics">moderate</content_attribute>
+    <content_attribute id="drugs-tobacco">moderate</content_attribute>
+    <content_attribute id="sex-nudity">intense</content_attribute>
+    <content_attribute id="sex-themes">intense</content_attribute>
+    <content_attribute id="language-profanity">intense</content_attribute>
+    <content_attribute id="language-discrimination">intense</content_attribute>
+    <content_attribute id="social-chat">intense</content_attribute>
+    <content_attribute id="social-info">mild</content_attribute>
+  </content_rating>
+
+  <releases>
+    <release version="0.1.0" date="2026-11-01">
+      <description>
+        <p>Initial release.</p>
+      </description>
+    </release>
+  </releases>
+</component>
