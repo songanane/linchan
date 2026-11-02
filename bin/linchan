@@ -1,3 +1,10 @@
 #!/usr/bin/env bash
-# Launch Linchan from a source checkout.
-cd "$(dirname "$(readlink -f "$0")")/.." && exec python3 -m linchan "$@"
+# Launch Linchan from a source checkout. Uses uv when it is installed, plain python3 otherwise.
+cd "$(dirname "$(readlink -f "$0")")/.." || exit 1
+if command -v uv >/dev/null 2>&1; then
+    # GTK, libadwaita, WebKitGTK and PyGObject come from the system, so the project
+    # environment must be able to see the system site-packages.
+    [ -d .venv ] || uv venv --quiet --system-site-packages --python /usr/bin/python3 || exit 1
+    exec uv run --quiet linchan "$@"
+fi
+exec python3 -m linchan "$@"

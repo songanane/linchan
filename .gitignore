@@ -2,6 +2,10 @@ __pycache__/
 *.pyc
 build/
 build-flatpak/
+build-flatpak-rel/
 .flatpak-builder/
 repo/
 *.flatpak
+.venv/
+dist/
+.ruff_cache/

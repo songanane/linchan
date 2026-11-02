@@ -1,7 +1,6 @@
 """Main window: boards + watch-list sidebar, navigation stack for content."""
 import json
 import re
-import time
 
 import gi
 

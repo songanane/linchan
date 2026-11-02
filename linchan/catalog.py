@@ -3,7 +3,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GLib, GObject, Gtk, Pango
+from gi.repository import Adw, Gio, GObject, Gtk, Pango
 
 from .models import ThreadItem
 from .net import API, get_scaled_texture, get_texture

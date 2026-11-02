@@ -1,4 +1,12 @@
 import sys
+
 from .app import main
 
-sys.exit(main(sys.argv))
+
+def cli():
+    """Entry point for the `linchan` command (see pyproject.toml)."""
+    sys.exit(main(sys.argv))
+
+
+if __name__ == "__main__":
+    cli()

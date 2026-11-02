@@ -70,9 +70,13 @@ expect rough edges. Bug reports and pull requests are welcome.
 
 ## Build from source
 Needs Python 3, PyGObject, GTK 4.12+, libadwaita 1.5+, WebKitGTK 6.0 and GStreamer good plugins.
+With [uv](https://docs.astral.sh/uv/) (the system provides GTK and PyGObject, uv manages the rest):
 ```sh
-./bin/linchan                  # run from a checkout (posting may hit the libsoup bug above)
+./bin/linchan                  # creates .venv on first run, then starts the app
+uv run ruff check .            # lint
 ```
+`./bin/linchan` falls back to plain `python3 -m linchan` if uv is not installed. Posting may hit the
+libsoup bug above when run from source.
 Or build and install the Flatpak from this folder (also works on ARM):
 ```sh
 flatpak install flathub org.gnome.Platform//51 org.gnome.Sdk//51

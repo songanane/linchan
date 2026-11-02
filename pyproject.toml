@@ -1,0 +1,43 @@
+[project]
+name = "linchan"
+version = "0.1.0"
+description = "A native GTK 4 and libadwaita 4chan client for Linux"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+# PyGObject, GTK 4, libadwaita and WebKitGTK come from your system (see README):
+# PyGObject cannot be built from PyPI without the distro's development headers.
+# `uv venv --system-site-packages` makes them visible inside the project environment.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/songanane/linchan"
+
+[project.scripts]
+linchan = "linchan.__main__:cli"
+
+[dependency-groups]
+dev = ["ruff"]
+
+[build-system]
+requires = ["uv_build>=0.8,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "linchan"
+source-exclude = ["repo", "build*", "screenshots", "*.flatpak"]
+
+[tool.uv]
+# Use the system Python, so the system's PyGObject (built for it) can be imported.
+python-preference = "only-system"
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+# E402: gi.require_version() must run before the gi.repository imports.
+ignore = ["E402", "E501"]
