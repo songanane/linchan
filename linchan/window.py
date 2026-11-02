@@ -14,6 +14,11 @@ from .catalog import CatalogPage
 from .net import API, CACHE
 from .thread import ThreadPage
 
+try:  # the reply view needs WebKitGTK; browsing keeps working without it
+    from .poster import clear_browsing_data
+except (ImportError, ValueError):
+    clear_browsing_data = None
+
 _esc = GLib.markup_escape_text
 WATCH_POLL_SECS = 90
 
@@ -40,6 +45,7 @@ class Window(Adw.ApplicationWindow):
         self._action("back", lambda *_: self.nav.pop())
         self._action("toggle-sidebar", lambda *_: self.split.set_show_sidebar(not self.split.get_show_sidebar()))
         self._action("about", self.show_about)
+        self._action("clear-data", self.prompt_clear_data)
         nsfw = Gio.SimpleAction.new_stateful("hide-nsfw", None, GLib.Variant.new_boolean(state["hide_nsfw"]))
         nsfw.connect("change-state", self._on_hide_nsfw)
         self.add_action(nsfw)
@@ -65,12 +71,47 @@ class Window(Adw.ApplicationWindow):
     def toast(self, text):
         pass
 
+    def prompt_clear_data(self, *_):
+        """Wipe what the reply view stores (cookies, cache, Cloudflare clearance, any 4chan Pass login)."""
+        if clear_browsing_data is None:
+            self._message("Not available", "Clearing browsing data needs WebKitGTK, which is not installed.")
+            return
+        dlg = Adw.AlertDialog(
+            heading="Clear Browsing Data?",
+            body=(
+                "This deletes the cookies, cache and site data kept by the reply window: Cloudflare clearance and any "
+                "4chan Pass login. Reading threads stores none of it. Your watch list and settings are not touched."
+            ),
+        )
+        dlg.add_response("cancel", "Cancel")
+        dlg.add_response("clear", "Clear")
+        dlg.set_response_appearance("clear", Adw.ResponseAppearance.DESTRUCTIVE)
+        dlg.set_default_response("cancel")
+        dlg.set_close_response("cancel")
+        dlg.connect("response", lambda _d, r: r == "clear" and self._do_clear_data())
+        dlg.present(self)
+
+    def _do_clear_data(self):
+        def done(error):
+            if error:
+                self._message("Could not clear data", error)
+            else:
+                self._message("Browsing data cleared", "Cookies and site data from the reply window are gone.")
+
+        clear_browsing_data(done)
+
+    def _message(self, heading, body):
+        dlg = Adw.AlertDialog(heading=heading, body=body)
+        dlg.add_response("ok", "OK")
+        dlg.present(self)
+
     # ---- sidebar ---------------------------------------------------------------------
     def _build_sidebar(self):
         menu = Gio.Menu()
         menu.append("Open URL or Board…", "win.open-url")
         sec = Gio.Menu()
         sec.append("Hide NSFW Boards", "win.hide-nsfw")
+        sec.append("Clear Browsing Data…", "win.clear-data")
         menu.append_section(None, sec)
         sec2 = Gio.Menu()
         sec2.append("About Linchan", "win.about")

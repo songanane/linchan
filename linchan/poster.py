@@ -48,6 +48,23 @@ def network_session():
     return _session
 
 
+def clear_browsing_data(done):
+    """Delete everything the reply view stores: cookies, cache, local storage, Cloudflare clearance.
+
+    `done(error)` is called on the main loop, with None on success or an error message."""
+    manager = network_session().get_website_data_manager()
+
+    def finished(mgr, result):
+        try:
+            mgr.clear_finish(result)
+        except GLib.Error as e:
+            done(e.message)
+        else:
+            done(None)
+
+    manager.clear(WebKit.WebsiteDataTypes.ALL, 0, None, finished)  # timespan 0 = everything, not just recent data
+
+
 # ---- scripts injected into the thread page ---------------------------------------
 
 # Make the page transparent and leave only the captcha visible: hide every sibling on

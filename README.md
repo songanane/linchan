@@ -61,7 +61,8 @@ In the media viewer: ←/→ navigate, F fullscreen, S save, O open externally, 
 - **Unofficial.** 4chan only has a read-only API. Posting through a third-party app may break when the site changes, and the site can still ban you for how you post.
 - **Reading is polite.** At most one request per second, with `If-Modified-Since`, as the API rules ask.
 - **Video.** webm plays out of the box. mp4 (H.264) depends on your codecs; otherwise use "open externally".
-- **Your data.** Settings and the watch list are stored locally. The media cache is pruned after 7 days. Nothing is sent anywhere except to 4chan and its CDN. In the Flatpak, files are saved through the system file chooser.
+- **Your data.** Settings and the watch list are stored locally. The media cache is pruned after 7 days. No telemetry, no accounts. Reading only talks to 4chan's API and CDN. The reply window also loads 4chan's captcha, Cloudflare and `mcl.spur.us`, like a browser would, and keeps their cookies in its own folder. Reverse image search only runs when you pick an engine. In the Flatpak, files are saved through the system file chooser.
+- **Clearing cookies.** Menu, then "Clear Browsing Data…" deletes everything the reply window stored: cookies, cache, Cloudflare clearance and any 4chan Pass login. Reading threads stores none of it.
 - **Content.** Boards contain unmoderated content from anonymous users that may be offensive or explicit. Use "Hide NSFW boards" in the menu if you want.
 
 ## Made with AI
