@@ -1,14 +1,15 @@
 """Catalog page: searchable, sortable grid of threads."""
 
+import weakref
+
 import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GObject, Gtk, Pango, GLib
+from gi.repository import Adw, Gio, GLib, GObject, Gtk, Pango
 
 from .models import ThreadItem
 from .net import API, get_scaled_texture, get_texture
-import weakref
 
 THUMB_DELAY_MS = 120   # short settle time; the visibility check does the real work
 FULL_DELAY_MS = 400

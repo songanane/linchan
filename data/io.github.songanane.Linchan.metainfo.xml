@@ -83,6 +83,11 @@
   </content_rating>
 
   <releases>
+    <release version="0.1.2" date="2026-11-08">
+      <description>
+        <p>The catalog now only loads thumbnails for threads in view, so it opens faster and uses less bandwidth.</p>
+      </description>
+    </release>
     <release version="0.1.1" date="2026-11-02">
       <description>
         <p>Adds "Clear Browsing Data" to the menu, which deletes the cookies and site data kept by the reply window.</p>

@@ -16,7 +16,7 @@ You do not need to build anything.
    `linchan-<version>-x86_64.flatpak`.
 2. Install it:
    ```sh
-   flatpak install --user ./linchan-0.1.1-x86_64.flatpak
+   flatpak install --user ./linchan-0.1.2-x86_64.flatpak
    ```
 3. Start **Linchan** from your app menu, or run `flatpak run io.github.songanane.Linchan`.
 
@@ -28,8 +28,8 @@ runtime (a few hundred MB, shared with other GNOME Flatpaks), so Flathub has to 
 flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 ```
 
-To update, download the newer file and run the same install command again.
-To remove it: `flatpak uninstall io.github.songanane.Linchan`.
+To update, download the newer file and run the same install command again.<br>
+To remove/uninstall it: `flatpak uninstall io.github.songanane.Linchan`.
 
 Only x86_64 (normal 64-bit PCs and laptops) is built for now. On ARM you can build it yourself, see below.
 

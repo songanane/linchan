@@ -1,6 +1,6 @@
 [project]
 name = "linchan"
-version = "0.1.1"
+version = "0.1.2"
 description = "A native GTK 4 and libadwaita 4chan client for Linux"
 readme = "README.md"
 license = "GPL-3.0-or-later"
