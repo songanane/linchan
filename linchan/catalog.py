@@ -4,12 +4,17 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Adw, Gio, GObject, Gtk, Pango
+from gi.repository import Adw, Gio, GObject, Gtk, Pango, GLib
 
 from .models import ThreadItem
 from .net import API, get_scaled_texture, get_texture
+import weakref
 
+THUMB_DELAY_MS = 120   # short settle time; the visibility check does the real work
+FULL_DELAY_MS = 400
+VIS_MARGIN = 400       # px above/below the fold that still counts as visible (0 = strict)
 FULL_SIZE = 640  # longest side, in px, of the sharp card image
+
 
 SORTS = ["Bump order", "Last reply", "Most replies", "Most images", "Newest", "Oldest"]
 _KEYS = [
@@ -24,63 +29,127 @@ _KEYS = [
 
 class Card(Gtk.Box):
     def __init__(self):
-        super().__init__(
-            orientation=Gtk.Orientation.VERTICAL,
-            spacing=6,
-            css_classes=["catalog-card", "card"],
-            width_request=300,
-            margin_top=6,
-            margin_bottom=6,
-            margin_start=6,
-            margin_end=6,
-        )
-        self.tok, self.item = 0, None
-        self.picture = Gtk.Picture(can_shrink=True, content_fit=Gtk.ContentFit.CONTAIN, height_request=240, css_classes=["catalog-thumb"])
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=6,
+                         css_classes=["catalog-card", "card"], width_request=300,
+                         margin_top=6, margin_bottom=6, margin_start=6, margin_end=6)
+        self.tok, self.item, self.page, self.net = 0, None, None, None
+        self._thumb_id = self._full_id = 0
+        self._want_thumb = self._want_full = False
+        self._have_full = []
+        self.picture = Gtk.Picture(can_shrink=True, content_fit=Gtk.ContentFit.CONTAIN,
+                                   height_request=240, css_classes=["catalog-thumb"])
         self.subject = Gtk.Label(xalign=0, css_classes=["heading"], ellipsize=Pango.EllipsizeMode.END, single_line_mode=True)
-        self.teaser = Gtk.Label(
-            xalign=0,
-            yalign=0,
-            wrap=True,
-            wrap_mode=Pango.WrapMode.WORD_CHAR,
-            lines=2,
-            ellipsize=Pango.EllipsizeMode.END,
-            vexpand=False,
-            css_classes=["caption"],
-        )
+        self.teaser = Gtk.Label(xalign=0, yalign=0, wrap=True, wrap_mode=Pango.WrapMode.WORD_CHAR,
+                                lines=2, ellipsize=Pango.EllipsizeMode.END, vexpand=False, css_classes=["caption"])
         self.meta = Gtk.Label(xalign=0, css_classes=["caption", "dim-label"])
         for w in (self.picture, self.subject, self.teaser, self.meta):
             self.append(w)
 
     def bind(self, it):
+        self._stop()
         self.item, self.tok = it, self.tok + 1
+        self._have_full = []
         d = it.d
         self.subject.set_label(it.subject or " ")
         self.subject.set_visible(bool(it.subject))
-        self.teaser.set_label(" ".join(it.plain.split())[:300])  # one paragraph so lines=2 applies
+        self.teaser.set_label(" ".join(it.plain.split())[:300])
         flags = ("📌 " if d.get("sticky") else "") + ("🔒 " if d.get("closed") else "")
-        total_images = it.images + (1 if it.tim else 0)  # the API's count excludes the OP's own image
+        total_images = it.images + (1 if it.tim else 0)
         self.meta.set_label(f"{flags}R: {it.replies} / I: {it.images} / IMG: {total_images}")
         self.set_tooltip_text((it.subject + "\n" if it.subject else "") + it.plain[:600])
         self.picture.set_paintable(None)
         if it.tim:
+            self._want_thumb, self._want_full = True, it.has_full_image
+            self._thumb_id = GLib.timeout_add(THUMB_DELAY_MS, self._kick)
+
+    def unbind(self):
+        self._stop()
+        self.tok += 1
+        self.item = None
+        self.picture.set_paintable(None)
+
+    def do_dispose(self):
+        self._stop()
+        super().do_dispose()
+
+    def _stop(self):
+        if self._thumb_id:
+            GLib.source_remove(self._thumb_id)
+            self._thumb_id = 0
+
+        if self._full_id:
+            GLib.source_remove(self._full_id)
+            self._full_id = 0
+
+        self._want_thumb = self._want_full = False
+
+        if self.page is not None:
+            self.page.discard_pending(self)
+
+    def poke(self):
+        # Called after scroll settles. Skip cards with a timer already pending,
+        # or with nothing left to load.
+        if self.item is None or self._thumb_id or self._full_id:
+            return
+        if self._want_thumb or self._want_full:
+            self._kick()
+
+    # -- lazy loading ------------------------------------------------------
+    def _kick(self):                       # fired by the timer OR by page scroll nudges
+        self._thumb_id = 0
+        it = self.item
+        if it is None or not (self._want_thumb or self._want_full):
+            return GLib.SOURCE_REMOVE
+        if not self._on_screen():          # offscreen: park ourselves for a scroll nudge
+            if self.page is not None:
+                self.page.add_pending(self)
+            return GLib.SOURCE_REMOVE
+        if self._want_thumb:
+            self._want_thumb = False
             tok = self.tok
-            have_full = []  # set once the sharp version is shown
 
-            def show_thumb(tex):  # low-res placeholder, never overwrites the sharp one
-                if tok == self.tok and tex and not have_full:
+            def show(tex):
+                if tok == self.tok and tex and not self._have_full:
                     self.picture.set_paintable(tex)
+            get_texture(self.net, it.thumb_url, it.thumb_path, show)
+        if self._want_full:
+            self._want_full = False
+            self._full_id = GLib.timeout_add(FULL_DELAY_MS, self._kick_full)
+        return GLib.SOURCE_REMOVE
 
-            def show_full(tex):
-                if tok == self.tok and tex:
-                    have_full.append(1)
-                    self.picture.set_paintable(tex)
+    def _kick_full(self):
+        self._full_id = 0
+        it = self.item
+        if it is None:
+            return GLib.SOURCE_REMOVE
 
-            get_texture(self.net, it.thumb_url, it.thumb_path, show_thumb)
-            if it.has_full_image:
-                get_scaled_texture(self.net, it.media_url, it.media_path, FULL_SIZE, show_full)
+        if not self._on_screen():          # scrolled away meanwhile: retry later
+            self._want_full = True
+            if self.page is not None:
+                self.page.add_pending(self)
+            return GLib.SOURCE_REMOVE
 
-    net = None  # set by the page
+        tok = self.tok
 
+        def show(tex):
+            if tok == self.tok and tex:
+                self._have_full.append(1)
+                self.picture.set_paintable(tex)
+        get_scaled_texture(self.net, it.media_url, it.media_path, FULL_SIZE, show)
+
+        return GLib.SOURCE_REMOVE
+
+    def _on_screen(self):
+        page = self.page
+        sc = page.scroller if page else None
+        if sc is None or not self.get_mapped():      # hidden stack page / not shown yet
+            return False
+        pt = self.translate_coordinates(sc, 0, 0)    # None until allocated
+        if pt is None:
+            return False
+        y, h = pt[1], (self.get_height() or 200)
+        vh = sc.get_height()                         # real viewport height
+        return vh > 0 and y + h >= -VIS_MARGIN and y <= vh + VIS_MARGIN
 
 class CatalogPage(Adw.NavigationPage):
     def __init__(self, win, board, title):
@@ -98,10 +167,18 @@ class CatalogPage(Adw.NavigationPage):
         def setup(_f, li):
             c = Card()
             c.net = win.net
+            c.page = self                      # NEW
             li.set_child(c)
+
 
         factory.connect("setup", setup)
         factory.connect("bind", lambda _f, li: li.get_child().bind(li.get_item()))
+        def _unbind(_f, li):
+            c = li.get_child()
+            if c is not None:
+                c.unbind()
+        factory.connect("unbind", _unbind)
+
         self.grid = Gtk.GridView(
             model=Gtk.NoSelection(model=model),
             factory=factory,
@@ -111,7 +188,19 @@ class CatalogPage(Adw.NavigationPage):
             css_classes=["catalog-grid"],
         )
         self.grid.connect("activate", lambda _g, pos: win.open_thread(board, self.model.get_item(pos).no))
-        scroller = Gtk.ScrolledWindow(vexpand=True, child=self.grid)
+
+        scroller = Gtk.ScrolledWindow(
+            vexpand=True,
+            hscrollbar_policy=Gtk.PolicyType.NEVER,
+            propagate_natural_height=False,
+            child=self.grid,
+        )
+        self.scroller = scroller
+
+        self._pending, self._nudge_id = weakref.WeakSet(), 0
+        adj = scroller.get_vadjustment()
+        adj.connect("value-changed", self._schedule_nudge)   # scrolling
+        adj.connect("changed", self._schedule_nudge)         # resize / content size change
 
         self.search = Gtk.SearchEntry(placeholder_text="Filter threads…", hexpand=True)
         self.search.connect("search-changed", lambda *_: self.filter.changed(Gtk.FilterChange.DIFFERENT))
@@ -158,6 +247,27 @@ class CatalogPage(Adw.NavigationPage):
         self.loading = False
         self.refresh()
 
+    def add_pending(self, card):
+        self._pending.add(card)               # NOTE: never schedules by itself (no busy loop)
+
+    def discard_pending(self, card):
+        self._pending.discard(card)
+
+    def _schedule_nudge(self, *_):
+        if self._nudge_id:
+            GLib.source_remove(self._nudge_id)
+        self._nudge_id = GLib.timeout_add(150, self._run_nudge)   # debounce: fires after scrolling settles
+
+    def _run_nudge(self):
+        self._nudge_id = 0
+        child = self.grid.get_first_child()      # GridView children are the list-item widgets
+        while child is not None:
+            card = child.get_first_child()
+            if isinstance(card, Card):
+                card.poke()
+            child = child.get_next_sibling()
+        return GLib.SOURCE_REMOVE
+
     def _match(self, item, *_):
         q = self.search.get_text().strip().lower()
         return not q or all(w in item.text for w in q.split())
@@ -190,3 +300,4 @@ class CatalogPage(Adw.NavigationPage):
         items = [ThreadItem(t, self.board, i) for i, t in enumerate(threads)]
         self.store.splice(0, len(self.store), items)
         self.stack.set_visible_child_name("grid")
+        GLib.timeout_add(300, self._schedule_nudge)   # first-layout safety net
