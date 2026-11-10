@@ -66,8 +66,9 @@ In the media viewer: ←/→ navigate, F fullscreen, S save, O open externally, 
 - **Content.** Boards contain unmoderated content from anonymous users that may be offensive or explicit. Use "Hide NSFW boards" in the menu if you want.
 
 ## Made with AI
-Most of this code was written with AI under my direction. I use it and test it daily, but
-expect rough edges. Bug reports and pull requests are welcome.
+Linchan is built with heavy AI assistance. I'm a Python engineer with many years of experience: I decide the architecture and features, review the code that goes in, and use the app every day. AI writes a lot of the first drafts, and I'm responsible for what ships.
+
+That means bugs are possible, and I'd rather hear about them. Issues and pull requests are welcome, and I read every one.
 
 ## Build from source
 Needs:
